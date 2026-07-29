@@ -325,7 +325,7 @@ mod tests {
 
         let error = save_verification_report(dir.path(), &report).unwrap_err();
 
-        assert!(error.to_string().contains("unsafe component"));
+        assert!(error.to_string().contains("project-relative"));
     }
 
     #[test]

@@ -54,6 +54,7 @@ allowed range.
 
 ```bash
 orquestra doctor --security
+orquestra update check
 orquestra skill scan
 orquestra brain policy
 ```
@@ -66,6 +67,9 @@ project and require review before activation.
 
 Prebuilt packages are selected automatically by npm for Windows x64, macOS
 x64/ARM64, and Linux x64/ARM64.
+
+Version history and comparisons are published in
+[GitHub Releases](https://github.com/JonathLima/orquestra/releases).
 
 ## License
 

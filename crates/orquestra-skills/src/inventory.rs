@@ -1,6 +1,6 @@
 use chrono::Utc;
 use orquestra_core::error::OrquestraError;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::types::*;
 
@@ -13,7 +13,11 @@ pub fn inventory_md_path() -> PathBuf {
 }
 
 pub fn read_inventory() -> Result<Option<SkillInventory>, OrquestraError> {
-    let path = inventory_path();
+    read_inventory_at(Path::new("."))
+}
+
+pub fn read_inventory_at(project_dir: &Path) -> Result<Option<SkillInventory>, OrquestraError> {
+    let path = project_dir.join(inventory_path());
     if !path.exists() {
         return Ok(None);
     }
@@ -25,7 +29,15 @@ pub fn read_inventory() -> Result<Option<SkillInventory>, OrquestraError> {
 }
 
 pub fn write_inventory(skills: &[SkillInfo], sources: &[ScanSource]) -> Result<(), OrquestraError> {
-    let dir = PathBuf::from(".orquestra");
+    write_inventory_at(Path::new("."), skills, sources)
+}
+
+pub fn write_inventory_at(
+    project_dir: &Path,
+    skills: &[SkillInfo],
+    sources: &[ScanSource],
+) -> Result<(), OrquestraError> {
+    let dir = project_dir.join(".orquestra");
     if !dir.exists() {
         std::fs::create_dir_all(&dir)
             .map_err(|e| OrquestraError::from(format!("Cannot create .orquestra/: {e}")))?;
@@ -38,10 +50,10 @@ pub fn write_inventory(skills: &[SkillInfo], sources: &[ScanSource]) -> Result<(
     };
     let json = serde_json::to_string_pretty(&inventory)
         .map_err(|e| OrquestraError::from(format!("Cannot serialize inventory: {e}")))?;
-    std::fs::write(inventory_path(), &json)
+    std::fs::write(project_dir.join(inventory_path()), &json)
         .map_err(|e| OrquestraError::from(format!("Cannot write inventory: {e}")))?;
     let md = render_markdown(&inventory);
-    std::fs::write(inventory_md_path(), &md)
+    std::fs::write(project_dir.join(inventory_md_path()), &md)
         .map_err(|e| OrquestraError::from(format!("Cannot write inventory.md: {e}")))?;
     Ok(())
 }

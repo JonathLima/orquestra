@@ -26,10 +26,6 @@ Hello from integration tests.
     dir
 }
 
-fn cleanup() {
-    let _ = fs::remove_dir_all(".orquestra");
-}
-
 #[test]
 fn test_scan_parses_frontmatter_from_real_file() {
     let dir = test_dir();
@@ -51,20 +47,20 @@ fn test_scan_parses_frontmatter_from_real_file() {
 
 #[test]
 fn test_full_scan_write_read_cycle() {
-    let _dir = test_dir();
+    let project = tempfile::tempdir().expect("create isolated inventory project");
     let config = orquestra_skills::SkillScannerConfig::default();
     let sources = orquestra_skills::default_scan_sources();
     let skills = orquestra_skills::scan_all(&sources, &config);
-    orquestra_skills::write_inventory(&skills, &sources).unwrap();
-    let inv = orquestra_skills::read_inventory().unwrap().unwrap();
+    orquestra_skills::write_inventory_at(project.path(), &skills, &sources).unwrap();
+    let inv = orquestra_skills::read_inventory_at(project.path())
+        .unwrap()
+        .unwrap();
     assert_eq!(inv.schema_version, 1);
     assert!(inv.sources.len() >= 3);
-    cleanup();
 }
 
 #[test]
 fn test_render_markdown_from_scan() {
-    let _dir = test_dir();
     let config = orquestra_skills::SkillScannerConfig::default();
     let sources = orquestra_skills::default_scan_sources();
     let skills = orquestra_skills::scan_all(&sources, &config);

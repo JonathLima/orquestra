@@ -16,6 +16,7 @@ mod run;
 mod session;
 mod setup;
 mod skills;
+mod update;
 mod verify;
 
 use clap::Parser;
@@ -51,6 +52,7 @@ fn run() -> Result<(), OrquestraError> {
         cli::Command::Run { action } => run::run(action, &config.output),
         cli::Command::Session { action } => session::run(action, &config.output),
         cli::Command::Init { action } => init::run(action, &config),
+        cli::Command::Update { action } => update::run(action, &config.output),
         cli::Command::Setup { host, dry_run } => setup::run(host, *dry_run, &config.output),
     }
 }

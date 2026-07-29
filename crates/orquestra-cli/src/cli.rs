@@ -1,4 +1,4 @@
-use crate::{brain, init, model, research, skills, verify};
+use crate::{brain, init, model, research, skills, update, verify};
 use clap::{Parser, Subcommand};
 use orquestra_core::config::OutputFormat;
 use serde::Serialize;
@@ -96,6 +96,12 @@ pub enum Command {
     Init {
         #[command(subcommand)]
         action: init::InitAction,
+    },
+
+    /// Check for Orquestra package updates
+    Update {
+        #[command(subcommand)]
+        action: update::UpdateAction,
     },
 
     /// Install Orquestra skills into a target host

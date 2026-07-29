@@ -32,7 +32,28 @@ to run manually.
 ## 1. Bootstrap
 
 1. Detect the active host: `codex`, `claude-code`, `opencode`, or `antigravity`.
-2. Run:
+2. Check the installed npm package before creating a new init session:
+
+```bash
+orquestra --output json update check
+```
+
+If the status is `available`, tell the user the current and latest versions and
+ask whether to update the Orquestra package and synchronize its skills for the
+active host. Do not update without explicit consent.
+
+If the user accepts, wait for the check process to exit, then run:
+
+```bash
+npm install --global @jonathlima/orquestra@latest
+orquestra setup --host <host>
+```
+
+This consent authorizes refreshing only Orquestra-owned skills. Never overwrite
+unrelated global skills. If the check is `up-to-date`, `unknown`, or `disabled`,
+or if the user declines, continue without blocking or repeating the prompt.
+
+3. Run:
 
 ```bash
 orquestra doctor --security
@@ -40,12 +61,12 @@ orquestra skill scan
 orquestra init start --host <host> --idea "<invocation arguments>"
 ```
 
-3. Capture the init session ID.
-4. Inspect project structure, filenames, file types, and manifests without
+4. Capture the init session ID.
+5. Inspect project structure, filenames, file types, and manifests without
    reading document contents.
-5. Select `orquestra-grill` for a new project or when no document content is authorized.
-6. Select `orquestra-grill-with-docs` for an existing project.
-7. Obtain consolidated consent for candidate paths and file types before reading any document content.
+6. Select `orquestra-grill` for a new project or when no document content is authorized.
+7. Select `orquestra-grill-with-docs` for an existing project.
+8. Obtain consolidated consent for candidate paths and file types before reading any document content.
    If consent is denied, switch to `orquestra-grill`.
 
 ## 2. Discovery And Convergence

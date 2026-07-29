@@ -1,6 +1,6 @@
 {
   "name": "@jonathlima/orquestra",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Orquestra local-first orchestration runtime with automated init, DAG execution, skill routing, and evidence-based verification.",
   "repository": {
     "type": "git",
@@ -34,11 +34,11 @@
     "prepublishOnly": "node scripts/prepare-publish.mjs"
   },
   "optionalDependencies": {
-    "@jonathlima/orquestra-win32-x64": "0.1.0",
-    "@jonathlima/orquestra-darwin-x64": "0.1.0",
-    "@jonathlima/orquestra-darwin-arm64": "0.1.0",
-    "@jonathlima/orquestra-linux-x64": "0.1.0",
-    "@jonathlima/orquestra-linux-arm64": "0.1.0"
+    "@jonathlima/orquestra-win32-x64": "0.1.1",
+    "@jonathlima/orquestra-darwin-x64": "0.1.1",
+    "@jonathlima/orquestra-darwin-arm64": "0.1.1",
+    "@jonathlima/orquestra-linux-x64": "0.1.1",
+    "@jonathlima/orquestra-linux-arm64": "0.1.1"
   },
   "keywords": [
     "orquestra",

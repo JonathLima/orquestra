@@ -13,7 +13,8 @@ pub use brain::{
 };
 pub use frontmatter::{SkillFrontmatter, parse_frontmatter};
 pub use inventory::{
-    inventory_md_path, inventory_path, read_inventory, render_markdown, write_inventory,
+    inventory_md_path, inventory_path, read_inventory, read_inventory_at, render_markdown,
+    write_inventory, write_inventory_at,
 };
 pub use matching::{SkillMatch, SkillMatchReport, match_plan, match_ticket};
 pub use scanner::{

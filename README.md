@@ -7,7 +7,8 @@
 [Source](https://github.com/JonathLima/orquestra) |
 [npm](https://www.npmjs.com/package/@jonathlima/orquestra) |
 [CI](https://github.com/JonathLima/orquestra/actions/workflows/ci.yml) |
-[Changelog](./CHANGELOG.md) |
+[Releases](https://github.com/JonathLima/orquestra/releases) |
+[WIE MCP](https://github.com/JonathLima/WIE_MCP) |
 [AGPL-3.0-only](./LICENSE)
 
 Orquestra is a local-first orchestration extension for AI coding CLIs. You give
@@ -45,8 +46,9 @@ Orquestra adds a repeatable product workflow:
   - Antigravity
 - A web-search tool configured in that host when the demand requires research
 
-Orquestra does not require a specific search provider. A host can use WIE or any
-other MCP/search connector mapped in the Orquestra configuration.
+Orquestra does not require a specific search provider. A host can use
+[WIE MCP](https://github.com/JonathLima/WIE_MCP) or any other search connector
+mapped in the Orquestra configuration.
 
 ## Install
 
@@ -251,6 +253,9 @@ Normal users primarily need `setup`, `doctor`, and the host's
 # Diagnose installation, hosts, policy, and write roots
 orquestra doctor --security
 
+# Check the npm package version
+orquestra update check
+
 # Preview or repeat host setup
 orquestra setup --host opencode --dry-run
 orquestra setup --host opencode
@@ -277,7 +282,8 @@ Run `orquestra <command> --help` for the complete command interface.
 - Verification commands use literal argument arrays, never shell strings.
 - Verification profiles enforce timeouts, output caps, and artifact checks.
 - Secrets are redacted from persisted process output.
-- Global user skills are read-only.
+- Global user skills are read-only except when the user explicitly authorizes
+  setup or synchronization of Orquestra-owned skills.
 - BRAIN candidates are quarantined until approved.
 - External skill discovery is disabled unless policy explicitly enables it.
 - Research rejects private-network destinations and records source hashes.
@@ -309,7 +315,7 @@ seven-skill setup, discovery, five-source research, confidence convergence,
 adaptive planning, skill gaps, BRAIN quarantine, DAG waves, failed verification,
 rerouting, checkpoints, and final evidence reports.
 
-The Rust workspace currently has 379 passing tests across 22 suites. Full
+The Rust workspace currently has 382 passing tests across 30 suites. Full
 registry publication, release signatures, and the complete operating-system/CPU
 installation matrix must still pass the release workflow before a stable public
 tag.
@@ -350,7 +356,8 @@ packages/
   cli-platform-*/      native platform packages
 ```
 
-Release history is recorded in [CHANGELOG.md](./CHANGELOG.md).
+Release history and comparisons between versions are recorded in
+[GitHub Releases](https://github.com/JonathLima/orquestra/releases).
 
 ## Maintainer Release
 
@@ -364,14 +371,15 @@ manifests:
 
 ```bash
 git push origin main
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
-The release workflow validates the token owner, builds and signs all five native
-packages, publishes them, and publishes the universal wrapper last. A failed
-release can be rerun safely; packages already present at the same version are
-skipped.
+The release workflow validates the token owner, runs the complete test suite,
+builds and signs all five native packages, publishes them, publishes the
+universal wrapper, and then creates a GitHub Release with generated comparison
+notes. A failed release can be rerun safely; packages and release entries
+already present at the same version are skipped.
 
 After the workflow succeeds:
 
