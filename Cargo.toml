@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/orquestra-cli",
+    "crates/orquestra-core",
+    "crates/orquestra-adapters",
+    "crates/orquestra-skills",
+    "crates/orquestra-plan",
+    "crates/orquestra-runtime",
+    "crates/orquestra-config",
+    "crates/orquestra-init",
+]
+
+[workspace.package]
+license = "AGPL-3.0-only"
+repository = "https://github.com/JonathLima/orquestra"

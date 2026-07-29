@@ -1,0 +1,28 @@
+[package]
+name = "orquestra-cli"
+version = "0.1.0"
+edition = "2024"
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = []
+
+[dependencies]
+orquestra-core = { path = "../orquestra-core" }
+orquestra-adapters = { path = "../orquestra-adapters" }
+orquestra-skills = { path = "../orquestra-skills" }
+orquestra-plan = { path = "../orquestra-plan" }
+orquestra-runtime = { path = "../orquestra-runtime" }
+orquestra-init = { path = "../orquestra-init" }
+clap = { version = "4", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+which = "7"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"

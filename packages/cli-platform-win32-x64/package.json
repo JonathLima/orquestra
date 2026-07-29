@@ -1,0 +1,19 @@
+{
+  "name": "@jonathlima/orquestra-win32-x64",
+  "version": "0.1.0",
+  "description": "Orquestra CLI binary for Windows x64",
+  "repository": "https://github.com/JonathLima/orquestra",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": ["win32"],
+  "cpu": ["x64"],
+  "files": ["bin/", "verify.js", "LICENSE"],
+  "scripts": {
+    "postinstall": "node verify.js"
+  },
+  "license": "AGPL-3.0-only"
+}

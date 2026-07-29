@@ -1,0 +1,21 @@
+[package]
+name = "orquestra-runtime"
+version = "0.1.0"
+edition = "2024"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+orquestra-core = { path = "../orquestra-core" }
+orquestra-plan = { path = "../orquestra-plan" }
+orquestra-config = { path = "../orquestra-config" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+tracing = "0.1"
+thiserror = "2"
+sha2 = "0.10"
+
+[dev-dependencies]
+tempfile = "3"

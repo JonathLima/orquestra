@@ -1,0 +1,53 @@
+{
+  "name": "@jonathlima/orquestra",
+  "version": "0.1.0",
+  "description": "Orquestra local-first orchestration runtime with automated init, DAG execution, skill routing, and evidence-based verification.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonathLima/orquestra.git"
+  },
+  "homepage": "https://github.com/JonathLima/orquestra#readme",
+  "bugs": {
+    "url": "https://github.com/JonathLima/orquestra/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "index.cjs",
+  "bin": {
+    "orquestra": "index.cjs"
+  },
+  "files": [
+    "skills/",
+    "bin/",
+    "index.cjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build:rust": "node scripts/build-rust.mjs",
+    "pack:local": "npm run build:rust && node scripts/verify-pack.mjs",
+    "prepublishOnly": "node scripts/prepare-publish.mjs"
+  },
+  "optionalDependencies": {
+    "@jonathlima/orquestra-win32-x64": "0.1.0",
+    "@jonathlima/orquestra-darwin-x64": "0.1.0",
+    "@jonathlima/orquestra-darwin-arm64": "0.1.0",
+    "@jonathlima/orquestra-linux-x64": "0.1.0",
+    "@jonathlima/orquestra-linux-arm64": "0.1.0"
+  },
+  "keywords": [
+    "orquestra",
+    "orchestration",
+    "ai",
+    "cli",
+    "plugin",
+    "skills",
+    "agents"
+  ],
+  "license": "AGPL-3.0-only"
+}

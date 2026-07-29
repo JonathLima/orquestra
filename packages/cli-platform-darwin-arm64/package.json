@@ -1,0 +1,19 @@
+{
+  "name": "@jonathlima/orquestra-darwin-arm64",
+  "version": "0.1.0",
+  "description": "Orquestra CLI binary for macOS ARM64 (Apple Silicon)",
+  "repository": "https://github.com/JonathLima/orquestra",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": ["darwin"],
+  "cpu": ["arm64"],
+  "files": ["bin/", "verify.js", "LICENSE"],
+  "scripts": {
+    "postinstall": "node verify.js"
+  },
+  "license": "AGPL-3.0-only"
+}

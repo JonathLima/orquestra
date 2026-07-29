@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "title": "Concurrent Wave Test",
+  "tickets": [
+    {
+      "id": "P1",
+      "title": "Parallel task 1",
+      "objective": "First parallel work item.",
+      "acceptanceCriteria": ["work done"],
+      "blockedBy": [],
+      "preferredCapabilities": ["backend"],
+      "assignedSkill": "local-harness",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["diff"] }
+    },
+    {
+      "id": "P2",
+      "title": "Parallel task 2",
+      "objective": "Second parallel work item.",
+      "acceptanceCriteria": ["work done"],
+      "blockedBy": [],
+      "preferredCapabilities": ["backend"],
+      "assignedSkill": "local-harness",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["diff"] }
+    },
+    {
+      "id": "P3",
+      "title": "Parallel task 3",
+      "objective": "Third parallel work item.",
+      "acceptanceCriteria": ["work done"],
+      "blockedBy": [],
+      "preferredCapabilities": ["backend"],
+      "assignedSkill": "local-harness",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["diff"] }
+    },
+    {
+      "id": "P4",
+      "title": "Parallel task 4",
+      "objective": "Fourth parallel work item.",
+      "acceptanceCriteria": ["work done"],
+      "blockedBy": [],
+      "preferredCapabilities": ["backend"],
+      "assignedSkill": "local-harness",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["diff"] }
+    }
+  ]
+}

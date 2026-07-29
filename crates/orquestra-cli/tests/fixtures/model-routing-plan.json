@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "title": "Model Routing",
+  "modelPolicy": {
+    "qualityTarget": "max",
+    "costSensitivity": "balanced",
+    "allowWebResearch": true,
+    "preferLocalOnly": false,
+    "defaultHost": "codex"
+  },
+  "tickets": [
+    {
+      "id": "DOCS",
+      "title": "Update README wording",
+      "objective": "Make a small documentation wording update with no code behavior changes.",
+      "acceptanceCriteria": ["README wording is clearer"],
+      "blockedBy": [],
+      "preferredCapabilities": ["documentation"],
+      "assignedSkill": "writing-skills",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["diff"] }
+    },
+    {
+      "id": "SECURITY",
+      "title": "Production security release review",
+      "objective": "Perform a release readiness review covering security, auth, secrets, data-loss risk, and current web research for model and dependency guidance.",
+      "acceptanceCriteria": ["Security risks are identified", "Current research is cited", "Release blockers are explicit"],
+      "blockedBy": ["DOCS"],
+      "preferredCapabilities": ["security", "release", "web-search"],
+      "assignedSkill": "requesting-code-review",
+      "verification": { "minimumScore": 0.98, "requiredEvidence": ["test", "review"] }
+    }
+  ]
+}

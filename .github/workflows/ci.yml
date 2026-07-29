@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          package-manager-cache: false
+      - run: cargo fmt --check
+      - run: cargo check --workspace --all-targets
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Validate package metadata
+        shell: pwsh
+        run: |
+          $version = (Get-Content packages/cli/package.json | ConvertFrom-Json).version
+          node packages/cli/scripts/validate-release.mjs "v$version"
+
+  build-platform-packages:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            pkg: win32-x64
+            ext: .exe
+            command: cargo build --target x86_64-pc-windows-msvc -p orquestra-cli --release
+            native: true
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+            pkg: darwin-x64
+            ext: ""
+            command: cargo build --target x86_64-apple-darwin -p orquestra-cli --release
+            native: true
+          - target: aarch64-apple-darwin
+            os: macos-15
+            pkg: darwin-arm64
+            ext: ""
+            command: cargo build --target aarch64-apple-darwin -p orquestra-cli --release
+            native: true
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            pkg: linux-x64
+            ext: ""
+            command: cargo build --target x86_64-unknown-linux-gnu -p orquestra-cli --release
+            native: true
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            pkg: linux-arm64
+            ext: ""
+            command: cargo build --target aarch64-unknown-linux-gnu -p orquestra-cli --release
+            native: true
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          package-manager-cache: false
+      - run: ${{ matrix.command }}
+      - shell: pwsh
+        run: |
+          $binary = "orquestra-cli${{ matrix.ext }}"
+          $source = Join-Path "target/${{ matrix.target }}/release" $binary
+          $destinationDirectory = "packages/cli-platform-${{ matrix.pkg }}/bin"
+          $destination = Join-Path $destinationDirectory $binary
+          New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+          Copy-Item -LiteralPath $source -Destination $destination
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $destination).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText("$destination.sha256", $hash, [Text.Encoding]::ASCII)
+      - name: Validate installed command
+        if: matrix.native
+        shell: pwsh
+        run: |
+          $packageSource = "packages/cli-platform-${{ matrix.pkg }}"
+          $installedPackage = "packages/cli/node_modules/@jonathlima/orquestra-${{ matrix.pkg }}"
+          New-Item -ItemType Directory -Path $installedPackage -Force | Out-Null
+          Copy-Item -Path "$packageSource/*" -Destination $installedPackage -Recurse
+          if ("${{ matrix.ext }}" -ne ".exe") {
+            chmod +x (Join-Path $installedPackage "bin/orquestra-cli")
+          }
+          $consumerProject = Join-Path $env:RUNNER_TEMP "orquestra-consumer"
+          New-Item -ItemType Directory -Path $consumerProject -Force | Out-Null
+          Push-Location $consumerProject
+          node "$env:GITHUB_WORKSPACE/packages/cli/index.cjs" doctor --security
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Orquestra command failed."
+          }
+          if ("${{ matrix.pkg }}" -eq "linux-x64") {
+            foreach ($hostName in @("codex", "claude-code", "opencode", "antigravity")) {
+              node "$env:GITHUB_WORKSPACE/packages/cli/index.cjs" setup --host $hostName --dry-run
+              if ($LASTEXITCODE -ne 0) {
+                throw "Setup dry-run failed for $hostName."
+              }
+            }
+          }
+          Pop-Location
+      - uses: actions/upload-artifact@v7
+        with:
+          name: orquestra-cli-${{ matrix.pkg }}
+          path: packages/cli-platform-${{ matrix.pkg }}/

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "title": "Build Authentication",
+  "tickets": [
+    {
+      "id": "T1",
+      "title": "Design Schema",
+      "objective": "Create auth schema",
+      "acceptanceCriteria": ["Schema has users table", "Schema has sessions"],
+      "blockedBy": [],
+      "preferredCapabilities": ["database-design"],
+      "assignedSkill": "schema-skill",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["diff"] }
+    },
+    {
+      "id": "T2",
+      "title": "Implement Login",
+      "objective": "Implement login endpoint",
+      "acceptanceCriteria": ["Login works", "Password hashed"],
+      "blockedBy": ["T1"],
+      "preferredCapabilities": ["backend"],
+      "assignedSkill": "backend-skill",
+      "verification": { "minimumScore": 0.95, "requiredEvidence": ["test"] }
+    },
+    {
+      "id": "T3",
+      "title": "Add Tests",
+      "objective": "Add auth tests",
+      "acceptanceCriteria": ["Tests cover login", "Tests cover signup"],
+      "blockedBy": ["T2"],
+      "preferredCapabilities": ["testing"],
+      "assignedSkill": "testing-skill",
+      "verification": { "minimumScore": 0.9, "requiredEvidence": ["test"] }
+    }
+  ]
+}

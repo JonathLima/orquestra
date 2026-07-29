@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "title": "Bad Plan",
+  "tickets": [
+    {
+      "id": "T1",
+      "title": "Task 1",
+      "objective": "Do stuff",
+      "acceptanceCriteria": [],
+      "blockedBy": ["T3"],
+      "preferredCapabilities": [],
+      "assignedSkill": null,
+      "verification": { "minimumScore": 1.5, "requiredEvidence": [] }
+    },
+    {
+      "id": "T1",
+      "title": "Duplicate",
+      "objective": "",
+      "acceptanceCriteria": [],
+      "blockedBy": [],
+      "preferredCapabilities": [],
+      "assignedSkill": null,
+      "verification": { "minimumScore": -0.1, "requiredEvidence": [] }
+    }
+  ]
+}

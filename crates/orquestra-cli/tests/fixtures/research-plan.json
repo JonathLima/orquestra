@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "title": "Research Required Plan",
+  "modelPolicy": {
+    "qualityTarget": "max",
+    "costSensitivity": "balanced",
+    "allowWebResearch": true,
+    "preferLocalOnly": false,
+    "defaultHost": "codex"
+  },
+  "tickets": [
+    {
+      "id": "SECURITY",
+      "title": "Validate release model guidance",
+      "objective": "Perform current web research for production release model and dependency guidance.",
+      "acceptanceCriteria": [
+        "Current research is cited",
+        "Conflicting claims are resolved",
+        "Release guidance is backed by primary documentation"
+      ],
+      "blockedBy": [],
+      "preferredCapabilities": ["web-search", "security"],
+      "assignedSkill": "security-review",
+      "verification": {
+        "minimumScore": 0.98,
+        "requiredEvidence": ["test", "research"]
+      }
+    }
+  ]
+}

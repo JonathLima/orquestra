@@ -1,0 +1,230 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Validate release metadata
+        run: node packages/cli/scripts/validate-release.mjs "$GITHUB_REF_NAME"
+      - name: Validate npm owner token
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NODE_AUTH_TOKEN)) {
+            throw "Repository secret NPM_TOKEN is required."
+          }
+          $identity = (npm whoami).Trim()
+          if ($identity -ne "jonathlima") {
+            throw "NPM_TOKEN belongs to '$identity', expected 'jonathlima'."
+          }
+      - run: cargo fmt --check
+      - run: cargo check --workspace --all-targets
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+
+  build:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            package: win32-x64
+            extension: .exe
+            command: cargo build --target x86_64-pc-windows-msvc -p orquestra-cli --release
+            native: true
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+            package: darwin-x64
+            extension: ""
+            command: cargo build --target x86_64-apple-darwin -p orquestra-cli --release
+            native: true
+          - target: aarch64-apple-darwin
+            os: macos-15
+            package: darwin-arm64
+            extension: ""
+            command: cargo build --target aarch64-apple-darwin -p orquestra-cli --release
+            native: true
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            package: linux-x64
+            extension: ""
+            command: cargo build --target x86_64-unknown-linux-gnu -p orquestra-cli --release
+            native: true
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            package: linux-arm64
+            extension: ""
+            command: cargo build --target aarch64-unknown-linux-gnu -p orquestra-cli --release
+            native: true
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      - uses: sigstore/cosign-installer@v4.1.2
+      - name: Build native binary
+        run: ${{ matrix.command }}
+      - name: Package and sign native binary
+        shell: pwsh
+        run: |
+          $binary = "orquestra-cli${{ matrix.extension }}"
+          $source = Join-Path "target/${{ matrix.target }}/release" $binary
+          $destinationDirectory = "dist"
+          $destination = Join-Path $destinationDirectory $binary
+          New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+          Copy-Item -LiteralPath $source -Destination $destination
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $destination).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText("$destination.sha256", $hash, [Text.Encoding]::ASCII)
+          cosign sign-blob --yes --bundle "$destination.sigstore.json" $destination
+          if ($LASTEXITCODE -ne 0) {
+            throw "Cosign signing failed."
+          }
+      - name: Validate user-facing command
+        if: matrix.native
+        shell: pwsh
+        run: |
+          $binary = Join-Path "dist" "orquestra-cli${{ matrix.extension }}"
+          if ("${{ matrix.extension }}" -ne ".exe") {
+            chmod +x $binary
+          }
+          $consumerProject = Join-Path $env:RUNNER_TEMP "orquestra-consumer"
+          New-Item -ItemType Directory -Path $consumerProject -Force | Out-Null
+          Push-Location $consumerProject
+          & "$env:GITHUB_WORKSPACE/$binary" doctor --security
+          if ($LASTEXITCODE -ne 0) {
+            throw "Orquestra command failed before publication."
+          }
+          if ("${{ matrix.package }}" -eq "linux-x64") {
+            foreach ($hostName in @("codex", "claude-code", "opencode", "antigravity")) {
+              & "$env:GITHUB_WORKSPACE/$binary" setup --host $hostName --dry-run
+              if ($LASTEXITCODE -ne 0) {
+                throw "Setup dry-run failed for $hostName before publication."
+              }
+            }
+          }
+          Pop-Location
+      - uses: actions/upload-artifact@v7
+        with:
+          name: orquestra-cli-${{ matrix.package }}
+          path: dist/
+          if-no-files-found: error
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: sigstore/cosign-installer@v4.1.2
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: orquestra-cli-*
+          path: artifacts
+      - name: Place and validate all native artifacts
+        shell: pwsh
+        run: |
+          $platforms = @(
+            "win32-x64",
+            "darwin-x64",
+            "darwin-arm64",
+            "linux-x64",
+            "linux-arm64"
+          )
+          foreach ($platform in $platforms) {
+            $source = "artifacts/orquestra-cli-$platform"
+            $destination = "packages/cli-platform-$platform/bin"
+            New-Item -ItemType Directory -Path $destination -Force | Out-Null
+            Copy-Item -Path "$source/*" -Destination $destination
+            if ($platform -ne "win32-x64") {
+              chmod +x (Join-Path $destination "orquestra-cli")
+              if ($LASTEXITCODE -ne 0) {
+                throw "Could not restore executable mode for $platform."
+              }
+            }
+            node "packages/cli-platform-$platform/verify.js"
+            if ($LASTEXITCODE -ne 0) {
+              throw "Native package validation failed for $platform."
+            }
+            Push-Location "packages/cli-platform-$platform"
+            npm pack --dry-run --json
+            if ($LASTEXITCODE -ne 0) {
+              throw "npm pack failed for $platform."
+            }
+            Pop-Location
+          }
+      - name: Publish native packages
+        shell: pwsh
+        run: |
+          $platforms = @(
+            "win32-x64",
+            "darwin-x64",
+            "darwin-arm64",
+            "linux-x64",
+            "linux-arm64"
+          )
+          foreach ($platform in $platforms) {
+            Push-Location "packages/cli-platform-$platform"
+            $manifest = Get-Content package.json | ConvertFrom-Json
+            npm view "$($manifest.name)@$($manifest.version)" version *> $null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "$($manifest.name)@$($manifest.version) already exists; skipping."
+            } else {
+              npm publish --access public --provenance
+              if ($LASTEXITCODE -ne 0) {
+                throw "npm publish failed for $platform."
+              }
+            }
+            Pop-Location
+          }
+      - name: Validate and publish universal wrapper
+        working-directory: packages/cli
+        shell: pwsh
+        run: |
+          npm pack --dry-run --json
+          if ($LASTEXITCODE -ne 0) {
+            throw "npm pack failed for the universal wrapper."
+          }
+          $manifest = Get-Content package.json | ConvertFrom-Json
+          npm view "$($manifest.name)@$($manifest.version)" version *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "$($manifest.name)@$($manifest.version) already exists; skipping."
+          } else {
+            npm publish --access public --provenance
+            if ($LASTEXITCODE -ne 0) {
+              throw "npm publish failed for the universal wrapper."
+            }
+          }
